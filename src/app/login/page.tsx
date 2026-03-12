@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginFormData } from "@/lib/validators/auth";
@@ -9,7 +12,14 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
 
+import { supabase } from "@/lib/supabase-client";
+
 export default function LoginPage() {
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -18,8 +28,23 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  function onSubmit(data: LoginFormData) {
-    console.log("Login Data:", data);
+  async function onSubmit(data: LoginFormData) {
+    setLoading(true);
+    setServerError(null);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      setServerError(error.message);
+      return;
+    }
+
+    router.push("/dashboard");
   }
 
   return (
@@ -28,7 +53,7 @@ export default function LoginPage() {
 
       <div className="flex justify-center items-center py-20 px-4">
         <div className="w-full max-w-md bg-white p-8 rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-6 text-center text-gray-400">
+          <h2 className="text-2xl font-bold mb-6 text-center">
             Login to Your Account
           </h2>
 
@@ -52,13 +77,17 @@ export default function LoginPage() {
               error={errors.password?.message}
             />
 
+            {serverError && (
+              <p className="text-red-500 text-sm">{serverError}</p>
+            )}
+
             <Button type="submit" className="w-full">
-              Login
+              {loading ? "Logging in..." : "Login"}
             </Button>
           </form>
 
           <p className="text-sm text-center text-gray-600 mt-6">
-            Don't have an account?{" "}
+            Don&apos;t have an account?
             <Link href="/register" className="text-blue-600 hover:underline">
               Register
             </Link>
