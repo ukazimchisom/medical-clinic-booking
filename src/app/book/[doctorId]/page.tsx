@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { supabase } from "@/lib/supabase-client";
+import { useAuth } from "@/hooks/useAuth";
 import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,11 +27,44 @@ export default function BookAppointmentPage() {
     resolver: zodResolver(appointmentSchema),
   });
 
-  function onSubmit(data: AppointmentFormData) {
-    console.log("Booking Data:", {
-      doctorId,
-      ...data,
-    });
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  async function onSubmit(data: AppointmentFormData) {
+    console.log("Form submitted", data);
+    if (!user) {
+      alert("You must be logged in");
+      return;
+    }
+
+    setLoading(true);
+    setServerError(null);
+
+    // Check if slot already booked
+
+    // Insert new appointment
+    const { error } = await supabase.from("appointments").insert([
+      {
+        user_id: user.id,
+        doctor_id: doctorId,
+        appointment_date: data.appointment_date,
+        appointment_time: data.appointment_time,
+      },
+    ]);
+
+    setLoading(false);
+
+    if (error) {
+      if (error.code === "23505") {
+        setServerError("This time slot is already booked.");
+      } else {
+        setServerError(error.message);
+      }
+      return;
+    }
+
+    alert("Appointment booked successfully!");
   }
 
   return (
@@ -43,6 +79,12 @@ export default function BookAppointmentPage() {
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-4"
           >
+            {serverError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-md">
+                {serverError}
+              </div>
+            )}
+
             <div>
               <label className="text-sm font-medium">Appointment Date</label>
 
@@ -50,6 +92,7 @@ export default function BookAppointmentPage() {
                 type="date"
                 {...register("appointment_date")}
                 className="w-full border rounded-md px-3 py-2 mt-1"
+                onChange={() => setServerError(null)}
               />
 
               {errors.appointment_date && (
@@ -65,6 +108,7 @@ export default function BookAppointmentPage() {
               <select
                 {...register("appointment_time")}
                 className="w-full border rounded-md px-3 py-2 mt-1"
+                onChange={() => setServerError(null)}
               >
                 <option value="">Select a time</option>
                 <option value="09:00">09:00 AM</option>
@@ -82,7 +126,9 @@ export default function BookAppointmentPage() {
               )}
             </div>
 
-            <Button type="submit">Confirm Appointment</Button>
+            <Button type="submit">
+              {loading ? "Booking..." : "Confirm Appointment"}
+            </Button>
           </form>
         </div>
       </div>
