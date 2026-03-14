@@ -1,5 +1,6 @@
 "use client";
 
+import { cancelAppointment } from "@/services/appointment-service";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,7 +35,30 @@ export default function DashboardPage() {
     }
 
     loadAppointments();
-  }, [user]);
+  }, [user, authLoading]);
+
+  async function handleCancel(id: string) {
+    const confirmCancel = confirm(
+      "Are you sure you want to cancel this appointment?",
+    );
+
+    if (!confirmCancel) return;
+
+    try {
+      await cancelAppointment(id);
+
+      setAppointments((prev) =>
+        prev.map((appointment) =>
+          appointment.id === id
+            ? { ...appointment, status: "cancelled" }
+            : appointment,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      alert("Failed to cancel appointment.");
+    }
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -70,8 +94,25 @@ export default function DashboardPage() {
               </p>
 
               <p>
-                <strong>Status:</strong> {appointment.status}
+                <strong>Status:</strong>{" "}
+                <span
+                  className={`px-2 py-1 rounded text-xs ${
+                    appointment.status === "scheduled"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {appointment.status}
+                </span>
               </p>
+              {appointment.status === "scheduled" && (
+                <button
+                  onClick={() => handleCancel(appointment.id)}
+                  className="mt-3 text-sm text-red-600 hover:underline"
+                >
+                  Cancel Appointment
+                </button>
+              )}
             </div>
           ))}
         </div>

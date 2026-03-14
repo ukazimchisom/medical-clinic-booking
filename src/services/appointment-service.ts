@@ -13,3 +13,17 @@ export async function getUserAppointments(userId: string) {
 
   return data;
 }
+
+export async function cancelAppointment(appointmentId: string) {
+  const { error } = await supabase
+    .from("appointments")
+    .update({ status: "cancelled" })
+    .eq("id", appointmentId)
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return true;
+}
