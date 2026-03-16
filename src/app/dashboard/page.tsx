@@ -8,10 +8,13 @@ import { getUserAppointments } from "@/services/appointment-service";
 
 type Appointment = {
   id: string;
-  doctor_id: string;
   appointment_date: string;
   appointment_time: string;
   status: string;
+  doctors: {
+    name: string;
+    specialty: string;
+  };
 };
 
 export default function DashboardPage() {
@@ -81,17 +84,17 @@ export default function DashboardPage() {
               key={appointment.id}
               className="bg-white p-4 rounded-lg shadow"
             >
-              <p>
-                <strong>Doctor ID:</strong> {appointment.doctor_id}
+              <p className="font-semibold">{appointment.doctors.name}</p>
+
+              <p className="text-sm text-gray-500">
+                {appointment.doctors.specialty}
               </p>
 
               <p>
-                <strong>Date:</strong> {appointment.appointment_date}
+                {new Date(appointment.appointment_date).toLocaleDateString()}
               </p>
 
-              <p>
-                <strong>Time:</strong> {appointment.appointment_time}
-              </p>
+              <p>{appointment.appointment_time}</p>
 
               <p>
                 <strong>Status:</strong>{" "}

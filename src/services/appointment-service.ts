@@ -3,7 +3,18 @@ import { supabase } from "@/lib/supabase-client";
 export async function getUserAppointments(userId: string) {
   const { data, error } = await supabase
     .from("appointments")
-    .select("*")
+    .select(
+      `
+      id,
+      appointment_date,
+      appointment_time,
+      status,
+      doctors (
+        name,
+        specialty
+      )
+    `,
+    )
     .eq("user_id", userId)
     .order("appointment_date", { ascending: true });
 
