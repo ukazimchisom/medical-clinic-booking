@@ -13,3 +13,26 @@ export async function createDoctor(data: {
 
   return true;
 }
+
+export async function getDoctors() {
+  const { data, error } = await supabase
+    .from("doctors")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function deleteDoctor(id: string) {
+  const { error } = await supabase.from("doctors").delete().eq("id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return true;
+}
