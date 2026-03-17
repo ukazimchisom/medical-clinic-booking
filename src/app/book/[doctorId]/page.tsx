@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase-client";
 import { useAuth } from "@/hooks/useAuth";
 import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -9,6 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import Navbar from "@/components/layout/Navbar";
 import Button from "@/components/ui/Button";
+
+import { bookAppointment } from "@/app/actions/book-appointment";
 
 import {
   appointmentSchema,
@@ -32,7 +33,6 @@ export default function BookAppointmentPage() {
   const [serverError, setServerError] = useState<string | null>(null);
 
   async function onSubmit(data: AppointmentFormData) {
-    console.log("Form submitted", data);
     if (!user) {
       alert("You must be logged in");
       return;
@@ -41,32 +41,22 @@ export default function BookAppointmentPage() {
     setLoading(true);
     setServerError(null);
 
-    // Check if slot already booked
-
-    // Insert new appointment
-    const { error } = await supabase.from("appointments").insert([
-      {
-        user_id: user.id,
-        doctor_id: doctorId,
+    try {
+      await bookAppointment({
+        email: user.email!,
+        doctorId,
+        doctorName: "Doctor", // we’ll improve this later
         appointment_date: data.appointment_date,
         appointment_time: data.appointment_time,
-      },
-    ]);
+      });
 
-    setLoading(false);
-
-    if (error) {
-      if (error.code === "23505") {
-        setServerError("This time slot is already booked.");
-      } else {
-        setServerError(error.message);
-      }
-      return;
+      alert("Appointment booked successfully!");
+    } catch (error: any) {
+      setServerError(error.message);
     }
 
-    alert("Appointment booked successfully!");
+    setLoading(false);
   }
-
   return (
     <main className="min-h-screen bg-gray-50">
       <Navbar />
