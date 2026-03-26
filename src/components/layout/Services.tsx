@@ -95,7 +95,7 @@ export default function Services() {
         </div>
         <Link
           href="/doctors"
-          className="text-blue-500 text-lg font-semibold text-center"
+          className="text-gray-400 hover:text-blue-400 text-lg font-semibold text-center"
         >
           view all doctors
         </Link>
@@ -111,7 +111,7 @@ export default function Services() {
         />
 
         <div className="flex flex-col gap-4 items-center md:items-start ">
-          <span className="text-center font-bold md:text-left text-blue-500">
+          <span className="text-center font-bold md:text-left text-blue-400">
             BOOK APPOINTMENT
           </span>
           <h3 className="font-bold text-3xl text-center md:text-left">

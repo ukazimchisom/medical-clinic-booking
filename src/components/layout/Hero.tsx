@@ -8,7 +8,6 @@ export default function Hero() {
       id="hero"
       className="relative w-full min-h-[100svh] overflow-hidden"
     >
-      {/* Background Image */}
       <Image
         src="/doctor-patient-3.jpg"
         alt="Hero background"
@@ -17,11 +16,9 @@ export default function Hero() {
         className="object-cover object-[70%_center]"
       />
 
-      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-teal-600/90 via-teal-500/50 to-transparent" />
 
-      {/* Content */}
-      <div className="relative z-10 px-6 sm:px-7 py-20 max-w-6xl mx-auto grid md:grid-cols-2 items-center">
+      <div className="relative z-10 px-6 sm:px-7 py-20 max-w-6xl mx-auto grid md:grid-cols-2 items-center mt-10">
         <div className="text-white">
           <span className="block font-bold mb-2">
             We are here for your care.

@@ -2,7 +2,10 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 px-6 sm:px-12 py-12">
+    <footer
+      id="footer"
+      className="bg-gray-900 text-gray-300 px-6 sm:px-12 py-12"
+    >
       <div className="max-w-7xl mx-auto grid gap-10 md:grid-cols-4">
         <div>
           <h2 className="text-white text-2xl font-bold mb-4">DocSlot</h2>
@@ -19,13 +22,10 @@ export default function Footer() {
               <Link href="/">Home</Link>
             </li>
             <li>
-              <Link href="/#about">About</Link>
+              <a href="#about">About</a>
             </li>
             <li>
               <Link href="/doctors">Doctors</Link>
-            </li>
-            <li>
-              <Link href="/#services">Services</Link>
             </li>
           </ul>
         </div>
