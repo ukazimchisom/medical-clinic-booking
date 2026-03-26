@@ -1,4 +1,5 @@
 import AboutUs from "@/components/layout/AboutUs";
+import ChooseUs from "@/components/layout/ChooseUs";
 import Hero from "@/components/layout/Hero";
 import Navbar from "@/components/layout/Navbar";
 import Services from "@/components/layout/Services";
@@ -10,6 +11,7 @@ export default function Home() {
       <Hero />
       <AboutUs />
       <Services />
+      <ChooseUs />
     </main>
   );
 }
