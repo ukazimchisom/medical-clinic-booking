@@ -4,7 +4,10 @@ import Button from "../ui/Button";
 
 export default function Hero() {
   return (
-    <section className="relative w-full min-h-[100svh] overflow-hidden">
+    <section
+      id="hero"
+      className="relative w-full min-h-[100svh] overflow-hidden"
+    >
       {/* Background Image */}
       <Image
         src="/doctor-patient-3.jpg"

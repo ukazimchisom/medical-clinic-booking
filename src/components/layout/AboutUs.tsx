@@ -2,7 +2,10 @@ import Image from "next/image";
 
 export default function AboutUs() {
   return (
-    <section className="w-full h-auto mx-auto px-6 sm:px-12 py-20 grid md:grid-cols-2 gap-10 items-center bg-gray-100">
+    <section
+      id="about"
+      className="w-full h-auto mx-auto px-6 sm:px-12 py-20 grid md:grid-cols-2 gap-10 items-center bg-gray-100"
+    >
       <div className="sm:px-6 ">
         <span className="flex justify-center md:justify-start gap-3 font-semibold text-blue-800 mb-3">
           <Image

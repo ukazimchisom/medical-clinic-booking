@@ -4,7 +4,10 @@ import Link from "next/link";
 
 export default function Services() {
   return (
-    <section className="w-full h-auto mx-auto px-6 sm:px-12 py-20 items-center flex flex-col gap-10 ">
+    <section
+      id="services"
+      className="w-full h-auto mx-auto px-6 sm:px-12 py-20 items-center flex flex-col gap-10 "
+    >
       <h1 className="text-3xl font-bold max-w-md text-gray-600 text-center">
         Comprehensive Services for your Health
       </h1>
