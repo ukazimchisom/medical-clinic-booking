@@ -74,19 +74,25 @@ export default function DoctorsPage() {
         </div>
       </section>
       <section className="mt-10 h-auto max-w-7xl mx-auto px-6 sm:px-12 py-10">
-        {loading && <p className="text-gray-500">Loading doctors...</p>}
+        {loading && (
+          <div className="flex justify-center items-center py-10">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
 
-        <select
-          value={selectedSpecialty}
-          onChange={(e) => setSelectedSpecialty(e.target.value)}
-          className="mb-6 p-2 rounded border"
-        >
-          {specialties.map((spec) => (
-            <option key={spec} value={spec}>
-              {spec}
-            </option>
-          ))}
-        </select>
+        {!loading && doctors.length > 0 && (
+          <select
+            value={selectedSpecialty}
+            onChange={(e) => setSelectedSpecialty(e.target.value)}
+            className="mb-6 p-2 rounded border"
+          >
+            {specialties.map((spec) => (
+              <option key={spec} value={spec}>
+                {spec}
+              </option>
+            ))}
+          </select>
+        )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredDoctors.map((doctor) => (
