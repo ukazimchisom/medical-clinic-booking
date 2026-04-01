@@ -6,6 +6,12 @@ import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import Calendar from "@/components/ui/Calendar";
+import { format } from "date-fns";
+
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase-client";
+
 import Navbar from "@/components/layout/Navbar";
 import Button from "@/components/ui/Button";
 
@@ -15,10 +21,32 @@ import {
   appointmentSchema,
   AppointmentFormData,
 } from "@/lib/validators/appointment";
+import Image from "next/image";
 
 export default function BookAppointmentPage() {
   const params = useParams();
   const doctorId = params.doctorId as string;
+
+  const [doctor, setDoctor] = useState<any>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+
+  useEffect(() => {
+    async function fetchDoctor() {
+      const { data, error } = await supabase
+        .from("doctors")
+        .select("*")
+        .eq("id", doctorId)
+        .single();
+
+      if (error) {
+        console.error(error);
+      } else {
+        setDoctor(data);
+      }
+    }
+
+    if (doctorId) fetchDoctor();
+  }, [doctorId]);
 
   const {
     register,
@@ -38,15 +66,21 @@ export default function BookAppointmentPage() {
       return;
     }
 
+    if (!selectedDate) {
+      alert("Please select a date");
+      return;
+    }
+
     setLoading(true);
     setServerError(null);
 
     try {
       await bookAppointment({
+        userId: user.id,
         email: user.email!,
         doctorId,
-        doctorName: "Doctor", // we’ll improve this later
-        appointment_date: data.appointment_date,
+        doctorName: "Doctor",
+        appointment_date: format(selectedDate, "yyyy-MM-dd"),
         appointment_time: data.appointment_time,
       });
 
@@ -57,13 +91,41 @@ export default function BookAppointmentPage() {
 
     setLoading(false);
   }
+
+  if (!doctor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 mt-6">
       <Navbar />
 
-      <div className="max-w-xl mx-auto px-6 py-12">
-        <div className="bg-white p-8 rounded-lg shadow">
-          <h1 className="text-2xl font-bold mb-6">Book Appointment</h1>
+      <div className="max-w-xl md:max-w-5xl mx-auto px-6 py-12">
+        <h1 className="text-2xl font-bold mb-6">Book an Appointment</h1>
+        <p className="text-gray-600 mb-6">
+          Please select a date and time for your appointment.
+        </p>
+        <div className="bg-white p-8 rounded-lg ">
+          {doctor && (
+            <div className="mb-6 p-4 bg-blue-50 rounded-md flex items-center gap-4">
+              <Image
+                src={doctor.photo || "/default-doctor.jpg"}
+                alt={doctor.name}
+                width={80}
+                height={80}
+                className="rounded-full object-cover w-20 h-20"
+              />
+
+              <div>
+                <h2 className="text-lg font-semibold">{doctor.name}</h2>
+                <p className="text-gray-600">{doctor.specialty}</p>
+              </div>
+            </div>
+          )}
 
           <form
             onSubmit={handleSubmit(onSubmit)}
@@ -78,12 +140,7 @@ export default function BookAppointmentPage() {
             <div>
               <label className="text-sm font-medium">Appointment Date</label>
 
-              <input
-                type="date"
-                {...register("appointment_date")}
-                className="w-full border rounded-md px-3 py-2 mt-1"
-                onChange={() => setServerError(null)}
-              />
+              <Calendar selected={selectedDate} onSelect={setSelectedDate} />
 
               {errors.appointment_date && (
                 <p className="text-red-500 text-sm">
@@ -95,20 +152,15 @@ export default function BookAppointmentPage() {
             <div>
               <label className="text-sm font-medium">Appointment Time</label>
 
-              <select
-                {...register("appointment_time")}
-                className="w-full border rounded-md px-3 py-2 mt-1"
-                onChange={() => setServerError(null)}
-              >
-                <option value="">Select a time</option>
+              <select {...register("appointment_time")} className="input">
+                <option value="">Select time</option>
                 <option value="09:00">09:00 AM</option>
                 <option value="10:00">10:00 AM</option>
                 <option value="11:00">11:00 AM</option>
-                <option value="13:00">01:00 PM</option>
+                <option value="12:00">12:00 PM</option>
                 <option value="14:00">02:00 PM</option>
                 <option value="15:00">03:00 PM</option>
               </select>
-
               {errors.appointment_time && (
                 <p className="text-red-500 text-sm">
                   {errors.appointment_time.message}

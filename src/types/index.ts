@@ -7,6 +7,7 @@ export interface Doctor {
   photo: string;
   availability: string[];
   created_at: string;
+  image_url: string;
 }
 
 export interface Appointment {
