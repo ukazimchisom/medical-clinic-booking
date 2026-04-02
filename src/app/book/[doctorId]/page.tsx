@@ -23,12 +23,57 @@ import {
 } from "@/lib/validators/appointment";
 import Image from "next/image";
 
+import { getBookedSlots } from "@/services/appointment-service";
+
+interface Doctor {
+  id: string;
+  name: string;
+  specialty: string;
+  photo?: string;
+}
+
 export default function BookAppointmentPage() {
   const params = useParams();
   const doctorId = params.doctorId as string;
 
-  const [doctor, setDoctor] = useState<any>(null);
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function fetchSlots() {
+      if (!selectedDate) return;
+      const formattedDate = format(selectedDate, "yyyy-MM-dd");
+      try {
+        const slots = await getBookedSlots(doctorId, formattedDate);
+        setBookedSlots(slots);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchSlots();
+  }, [selectedDate, doctorId]);
+
+  const {
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<AppointmentFormData>({
+    resolver: zodResolver(appointmentSchema),
+  });
+
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedDate) {
+      setValue("appointment_date", format(selectedDate, "yyyy-MM-dd"), {
+        shouldValidate: true,
+      });
+    }
+  }, [selectedDate, setValue]);
 
   useEffect(() => {
     async function fetchDoctor() {
@@ -48,18 +93,6 @@ export default function BookAppointmentPage() {
     if (doctorId) fetchDoctor();
   }, [doctorId]);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<AppointmentFormData>({
-    resolver: zodResolver(appointmentSchema),
-  });
-
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
-
   async function onSubmit(data: AppointmentFormData) {
     if (!user) {
       alert("You must be logged in");
@@ -76,17 +109,17 @@ export default function BookAppointmentPage() {
 
     try {
       await bookAppointment({
-        userId: user.id,
         email: user.email!,
         doctorId,
-        doctorName: "Doctor",
-        appointment_date: format(selectedDate, "yyyy-MM-dd"),
+        appointment_date: data.appointment_date,
         appointment_time: data.appointment_time,
       });
 
       alert("Appointment booked successfully!");
-    } catch (error: any) {
-      setServerError(error.message);
+    } catch (error: unknown) {
+      setServerError(
+        error instanceof Error ? error.message : "An error occurred",
+      );
     }
 
     setLoading(false);
@@ -99,6 +132,15 @@ export default function BookAppointmentPage() {
       </div>
     );
   }
+
+  const timeSlots = [
+    { value: "09:00", label: "9:00 AM" },
+    { value: "10:00", label: "10:00 AM" },
+    { value: "11:00", label: "11:00 AM" },
+    { value: "12:00", label: "12:00 PM" },
+    { value: "14:00", label: "2:00 PM" },
+    { value: "15:00", label: "3:00 PM" },
+  ];
 
   return (
     <main className="min-h-screen bg-gray-50 mt-6">
@@ -149,20 +191,40 @@ export default function BookAppointmentPage() {
               )}
             </div>
 
+            {/* Replace the <select> block with this */}
             <div>
               <label className="text-sm font-medium">Appointment Time</label>
-
-              <select {...register("appointment_time")} className="input">
-                <option value="">Select time</option>
-                <option value="09:00">09:00 AM</option>
-                <option value="10:00">10:00 AM</option>
-                <option value="11:00">11:00 AM</option>
-                <option value="12:00">12:00 PM</option>
-                <option value="14:00">02:00 PM</option>
-                <option value="15:00">03:00 PM</option>
-              </select>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
+                {timeSlots.map(({ value, label }) => {
+                  const isBooked = bookedSlots.includes(value);
+                  const isSelected = selectedTime === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      disabled={isBooked}
+                      onClick={() => {
+                        setSelectedTime(value);
+                        setValue("appointment_time", value, {
+                          shouldValidate: true,
+                        });
+                      }}
+                      className={`py-2.5 rounded-lg border text-sm transition-all
+            ${
+              isBooked
+                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed line-through"
+                : isSelected
+                  ? "bg-blue-600 text-white border-blue-600 font-medium"
+                  : "bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:text-blue-600"
+            }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
               {errors.appointment_time && (
-                <p className="text-red-500 text-sm">
+                <p className="text-red-500 text-sm mt-1">
                   {errors.appointment_time.message}
                 </p>
               )}

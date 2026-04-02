@@ -38,3 +38,18 @@ export async function cancelAppointment(appointmentId: string) {
 
   return true;
 }
+
+export async function getBookedSlots(
+  doctorId: string,
+  date: string,
+): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("appointments")
+    .select("appointment_time")
+    .eq("doctor_id", doctorId)
+    .eq("appointment_date", date);
+
+  if (error) throw new Error(error.message);
+
+  return data.map((row) => row.appointment_time);
+}
