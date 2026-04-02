@@ -11,17 +11,15 @@ export async function getUserAppointments(userId: string) {
       status,
       doctors (
         name,
-        specialty
+        specialty,
+        photo
       )
     `,
     )
     .eq("user_id", userId)
-    .order("appointment_date", { ascending: true });
+    .order("appointment_date", { ascending: false });
 
-  if (error) {
-    throw new Error(error.message);
-  }
-
+  if (error) throw new Error(error.message);
   return data;
 }
 

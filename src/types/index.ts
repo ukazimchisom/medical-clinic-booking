@@ -18,4 +18,9 @@ export interface Appointment {
   appointment_time: string;
   status: "scheduled" | "cancelled" | "completed";
   created_at: string;
+  doctors: {
+    name: string;
+    specialty: string;
+    photo: string | null;
+  };
 }

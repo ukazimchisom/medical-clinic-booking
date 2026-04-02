@@ -194,7 +194,6 @@ export default function BookAppointmentPage() {
               )}
             </div>
 
-            {/* Replace the <select> block with this */}
             <div>
               <label className="text-sm font-medium">Appointment Time</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">

@@ -1,33 +1,23 @@
 "use client";
 
-import { cancelAppointment } from "@/services/appointment-service";
-import { useEffect, useState } from "react";
+import AuthGuard from "@/components/AuthGuard";
 import Navbar from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
-import { getUserAppointments } from "@/services/appointment-service";
-
-import AuthGuard from "@/components/AuthGuard";
-
-type Appointment = {
-  id: string;
-  appointment_date: string;
-  appointment_time: string;
-  status: string;
-  doctors: {
-    name: string;
-    specialty: string;
-  };
-};
+import {
+  cancelAppointment,
+  getUserAppointments,
+} from "@/services/appointment-service";
+import { Appointment } from "@/types";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
-
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user || authLoading) return;
-
     async function loadAppointments() {
       try {
         const data = await getUserAppointments(user.id);
@@ -35,29 +25,23 @@ export default function DashboardPage() {
       } catch (error) {
         console.error(error);
       }
-
       setLoading(false);
     }
-
     loadAppointments();
   }, [user, authLoading]);
+
+  const scheduled = appointments.filter((a) => a.status === "scheduled");
+  const cancelled = appointments.filter((a) => a.status === "cancelled");
 
   async function handleCancel(id: string) {
     const confirmCancel = confirm(
       "Are you sure you want to cancel this appointment?",
     );
-
     if (!confirmCancel) return;
-
     try {
       await cancelAppointment(id);
-
       setAppointments((prev) =>
-        prev.map((appointment) =>
-          appointment.id === id
-            ? { ...appointment, status: "cancelled" }
-            : appointment,
-        ),
+        prev.map((a) => (a.id === id ? { ...a, status: "cancelled" } : a)),
       );
     } catch (error) {
       console.error(error);
@@ -69,59 +53,118 @@ export default function DashboardPage() {
     <AuthGuard>
       <main className="min-h-screen bg-gray-50 mt-12">
         <Navbar />
-
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <h1 className="text-2xl font-bold mb-6 text-gray-800">
-            My Appointments
+        <div className="max-w-3xl mx-auto px-6 py-12">
+          <h1 className="text-2xl font-semibold mb-6 text-gray-800">
+            My appointments
           </h1>
 
-          {loading && <p>Loading appointments...</p>}
-
-          {!loading && appointments.length === 0 && (
-            <p className="text-gray-800">No appointments booked yet.</p>
+          {loading && (
+            <div className="flex justify-center py-12">
+              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            </div>
           )}
 
-          <div className="flex flex-col gap-4">
-            {appointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="bg-white p-4 rounded-lg shadow"
-              >
-                <p className="font-semibold">{appointment.doctors.name}</p>
+          {!loading && appointments.length === 0 && (
+            <div className="bg-white border border-gray-100 rounded-xl px-6 py-12 text-center">
+              <p className="text-gray-500 text-sm">
+                No appointments booked yet.
+              </p>
+            </div>
+          )}
 
-                <p className="text-sm text-gray-500">
-                  {appointment.doctors.specialty}
-                </p>
-
-                <p>
-                  {new Date(appointment.appointment_date).toLocaleDateString()}
-                </p>
-
-                <p>{appointment.appointment_time}</p>
-
-                <p>
-                  <strong>Status:</strong>{" "}
-                  <span
-                    className={`px-2 py-1 rounded text-xs ${
-                      appointment.status === "scheduled"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {appointment.status}
-                  </span>
-                </p>
-                {appointment.status === "scheduled" && (
-                  <button
-                    onClick={() => handleCancel(appointment.id)}
-                    className="mt-3 text-sm text-red-600 hover:underline"
-                  >
-                    Cancel Appointment
-                  </button>
-                )}
+          {!loading && appointments.length > 0 && (
+            <>
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                {[
+                  {
+                    label: "Total",
+                    value: appointments.length,
+                    color: "text-gray-800",
+                  },
+                  {
+                    label: "Scheduled",
+                    value: scheduled.length,
+                    color: "text-blue-600",
+                  },
+                  {
+                    label: "Cancelled",
+                    value: cancelled.length,
+                    color: "text-red-600",
+                  },
+                ].map(({ label, value, color }) => (
+                  <div key={label} className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-xs text-gray-500 mb-1">{label}</p>
+                    <p className={`text-2xl font-medium ${color}`}>{value}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+
+              <div className="flex flex-col gap-3">
+                {appointments.map((apt, i) => {
+                  const isCancelled = apt.status === "cancelled";
+                  return (
+                    <div
+                      key={apt.id}
+                      className={`bg-white border border-gray-100 rounded-xl p-4 flex items-center justify-between gap-4 transition-opacity ${isCancelled ? "opacity-60" : ""}`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-gray-100">
+                          <Image
+                            src={apt.doctors.photo || "/default-doctor.jpg"}
+                            alt={apt.doctors.name}
+                            width={40}
+                            height={40}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-800 truncate">
+                            {apt.doctors.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {apt.doctors.specialty}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">
+                            {new Date(apt.appointment_date).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}{" "}
+                            · {apt.appointment_time}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              isCancelled
+                                ? "bg-red-50 text-red-800"
+                                : "bg-green-50 text-green-800"
+                            }`}
+                          >
+                            {apt.status}
+                          </span>
+                        </div>
+                        {!isCancelled && (
+                          <button
+                            onClick={() => handleCancel(apt.id)}
+                            className="text-xs text-red-700 border border-red-200 rounded-md px-2.5 py-1 hover:bg-red-50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </main>
     </AuthGuard>
