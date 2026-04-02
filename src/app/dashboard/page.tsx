@@ -67,7 +67,7 @@ export default function DashboardPage() {
 
   return (
     <AuthGuard>
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-gray-50 mt-12">
         <Navbar />
 
         <div className="max-w-4xl mx-auto px-6 py-12">

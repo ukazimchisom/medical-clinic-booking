@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 
 import Calendar from "@/components/ui/Calendar";
 import { format } from "date-fns";
@@ -35,6 +36,8 @@ interface Doctor {
 export default function BookAppointmentPage() {
   const params = useParams();
   const doctorId = params.doctorId as string;
+
+  const router = useRouter();
 
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
@@ -99,8 +102,8 @@ export default function BookAppointmentPage() {
       return;
     }
 
-    if (!selectedDate) {
-      alert("Please select a date");
+    if (!doctor) {
+      setServerError("Doctor information is not available.");
       return;
     }
 
@@ -115,7 +118,7 @@ export default function BookAppointmentPage() {
         appointment_time: data.appointment_time,
       });
 
-      alert("Appointment booked successfully!");
+      router.push("/dashboard");
     } catch (error: unknown) {
       setServerError(
         error instanceof Error ? error.message : "An error occurred",
@@ -143,7 +146,7 @@ export default function BookAppointmentPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-gray-50 mt-6">
+    <main className="min-h-screen bg-gray-50 mt-12">
       <Navbar />
 
       <div className="max-w-xl md:max-w-5xl mx-auto px-6 py-12">

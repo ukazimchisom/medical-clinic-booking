@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase-client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -10,48 +10,25 @@ interface AuthGuardProps {
 }
 
 export default function AuthGuard({ children, adminOnly }: AuthGuardProps) {
-  const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    async function checkAuth() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
-
-      // Fetch role from profiles table
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", session.user.id)
-        .single();
-
-      if (error || !profile) {
-        router.replace("/login");
-        return;
-      }
-
-      setUserRole(profile.role);
-
-      if (adminOnly && profile.role !== "admin") {
-        router.replace("/dashboard");
-      }
-
-      setLoading(false);
+    if (loading) return;
+    if (!user) {
+      router.replace("/login");
     }
-
-    checkAuth();
-  }, [router, adminOnly]);
+  }, [user, loading, router]);
 
   if (loading) {
-    return <p className="p-6">Checking authentication...</p>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
+
+  if (!user) return null;
 
   return <>{children}</>;
 }
