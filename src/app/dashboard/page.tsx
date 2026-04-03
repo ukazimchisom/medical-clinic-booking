@@ -18,9 +18,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user || authLoading) return;
+    const userId = user.id;
     async function loadAppointments() {
       try {
-        const data = await getUserAppointments(user.id);
+        const data = await getUserAppointments(userId);
         setAppointments(data || []);
       } catch (error) {
         console.error(error);
