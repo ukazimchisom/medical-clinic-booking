@@ -36,7 +36,6 @@ export default function Navbar() {
           </a>
         </div>
 
-        {/* Desktop auth buttons */}
         <div className="hidden md:flex items-center gap-4 text-sm">
           {user ? (
             <>
@@ -48,7 +47,7 @@ export default function Navbar() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="text-gray-700 hover:text-red-600 transition-colors"
+                className="px-4 py-1.5 text-sm rounded-md border text-white bg-red-600 hover:bg-red-500 transition-all"
               >
                 Log out
               </button>
@@ -62,13 +61,14 @@ export default function Navbar() {
                 Sign Up
               </Link>
               <Link href="/login">
-                <Button className="px-4 py-1">Login</Button>
+                <button className="px-4 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-all">
+                  Login
+                </button>
               </Link>
             </>
           )}
         </div>
 
-        {/* Mobile */}
         <div className="md:hidden flex items-center gap-4">
           {!user && (
             <Link href="/login" onClick={() => setIsOpen(false)}>
@@ -85,7 +85,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {isOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 px-6 py-4 flex flex-col gap-4">
           <a
@@ -123,7 +122,7 @@ export default function Navbar() {
                   setIsOpen(false);
                   handleLogout();
                 }}
-                className="text-left text-red-600 hover:text-red-700"
+                className="text-center px-4 py-1.5 text-sm rounded-md border bg-red-600 text-white hover:bg-red-500 hover:text-white transition-all w-full"
               >
                 Log out
               </button>
