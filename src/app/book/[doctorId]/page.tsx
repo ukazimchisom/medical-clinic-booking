@@ -232,8 +232,15 @@ export default function BookAppointmentPage() {
               )}
             </div>
 
-            <Button type="submit">
-              {loading ? "Booking..." : "Confirm Appointment"}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Booking...
+                </span>
+              ) : (
+                "Confirm Appointment"
+              )}
             </Button>
           </form>
         </div>
