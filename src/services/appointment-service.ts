@@ -1,6 +1,10 @@
 import { supabase } from "@/lib/supabase-client";
 
-export async function getUserAppointments(userId: string) {
+import { Appointment } from "@/types";
+
+export async function getUserAppointments(
+  userId: string,
+): Promise<Appointment[]> {
   const { data, error } = await supabase
     .from("appointments")
     .select(
@@ -20,7 +24,8 @@ export async function getUserAppointments(userId: string) {
     .order("appointment_date", { ascending: false });
 
   if (error) throw new Error(error.message);
-  return data;
+
+  return (data || []) as unknown as Appointment[];
 }
 
 export async function cancelAppointment(appointmentId: string) {
