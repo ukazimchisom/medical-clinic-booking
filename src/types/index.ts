@@ -12,9 +12,6 @@ export interface Doctor {
 
 export type Appointment = {
   id: string;
-  user_id: string;
-  doctor_id: string;
-  created_at: string;
   appointment_date: string;
   appointment_time: string;
   status: string;
@@ -22,5 +19,5 @@ export type Appointment = {
     name: string;
     specialty: string;
     photo: string | null;
-  };
+  } | null;
 };

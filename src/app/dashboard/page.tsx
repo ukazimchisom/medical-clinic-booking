@@ -111,8 +111,8 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-gray-100">
                           <Image
-                            src={apt.doctors.photo || "/default-doctor.jpg"}
-                            alt={apt.doctors.name}
+                            src={apt.doctors?.photo || "/default-doctor.jpg"}
+                            alt={apt.doctors?.name || "Doctor"}
                             width={40}
                             height={40}
                             className="w-full h-full object-cover"
@@ -120,10 +120,10 @@ export default function DashboardPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-gray-800 truncate">
-                            {apt.doctors.name}
+                            {apt.doctors?.name || "Unknown Doctor"}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {apt.doctors.specialty}
+                            {apt.doctors?.specialty || ""}
                           </p>
                         </div>
                       </div>
