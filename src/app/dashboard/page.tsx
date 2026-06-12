@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import AuthGuard from "@/components/AuthGuard";
 import Navbar from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,19 +36,29 @@ export default function DashboardPage() {
   const cancelled = appointments.filter((a) => a.status === "cancelled");
 
   async function handleCancel(id: string) {
-    const confirmCancel = confirm(
-      "Are you sure you want to cancel this appointment?",
-    );
-    if (!confirmCancel) return;
-    try {
-      await cancelAppointment(id);
-      setAppointments((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, status: "cancelled" } : a)),
-      );
-    } catch (error) {
-      console.error(error);
-      alert("Failed to cancel appointment.");
-    }
+    toast("Are you sure you want to cancel this appointment?", {
+      action: {
+        label: "Yes, cancel",
+        onClick: async () => {
+          try {
+            await cancelAppointment(id);
+            setAppointments((prev) =>
+              prev.map((a) =>
+                a.id === id ? { ...a, status: "cancelled" } : a,
+              ),
+            );
+            toast.success("Appointment cancelled successfully");
+          } catch (error) {
+            console.error(error);
+            toast.error("Failed to cancel appointment");
+          }
+        },
+      },
+      cancel: {
+        label: "No, keep it",
+        onClick: () => {},
+      },
+    });
   }
 
   return (

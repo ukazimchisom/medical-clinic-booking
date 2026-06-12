@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useParams } from "next/navigation";
@@ -98,7 +99,7 @@ export default function BookAppointmentPage() {
 
   async function onSubmit(data: AppointmentFormData) {
     if (!user) {
-      alert("You must be logged in");
+      toast.error("You must be logged in to book an appointment");
       return;
     }
 
@@ -117,7 +118,7 @@ export default function BookAppointmentPage() {
         appointment_date: data.appointment_date,
         appointment_time: data.appointment_time,
       });
-
+      toast.success("Appointment booked successfully!");
       router.push("/dashboard");
     } catch (error: unknown) {
       setServerError(
