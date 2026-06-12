@@ -1,5 +1,8 @@
 "use client";
 
+import AppointmentSkeleton, {
+  StatsSkeleton,
+} from "@/components/ui/AppointmentSkeleton";
 import { toast } from "sonner";
 import AuthGuard from "@/components/AuthGuard";
 import Navbar from "@/components/layout/Navbar";
@@ -71,11 +74,15 @@ export default function DashboardPage() {
           </h1>
 
           {loading && (
-            <div className="flex justify-center py-12">
-              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            </div>
+            <>
+              <StatsSkeleton />
+              <div className="flex flex-col gap-3">
+                <AppointmentSkeleton />
+                <AppointmentSkeleton />
+                <AppointmentSkeleton />
+              </div>
+            </>
           )}
-
           {!loading && appointments.length === 0 && (
             <div className="bg-white border border-gray-100 rounded-xl px-6 py-12 text-center">
               <p className="text-gray-500 text-sm">
