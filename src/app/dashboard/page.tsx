@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import AppointmentSkeleton, {
   StatsSkeleton,
 } from "@/components/ui/AppointmentSkeleton";
@@ -17,23 +18,16 @@ import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user || authLoading) return;
-    const userId = user.id;
-    async function loadAppointments() {
-      try {
-        const data = await getUserAppointments(userId);
-        setAppointments(data || []);
-      } catch (error) {
-        console.error(error);
-      }
-      setLoading(false);
-    }
-    loadAppointments();
-  }, [user, authLoading]);
+  const {
+    data: appointments = [],
+    isLoading: loading,
+    refetch,
+  } = useQuery({
+    queryKey: ["appointments", user?.id],
+    queryFn: () => getUserAppointments(user!.id),
+    enabled: !!user && !authLoading,
+  });
 
   const scheduled = appointments.filter((a) => a.status === "scheduled");
   const cancelled = appointments.filter((a) => a.status === "cancelled");
@@ -45,11 +39,7 @@ export default function DashboardPage() {
         onClick: async () => {
           try {
             await cancelAppointment(id);
-            setAppointments((prev) =>
-              prev.map((a) =>
-                a.id === id ? { ...a, status: "cancelled" } : a,
-              ),
-            );
+            await refetch(); // refetch appointments from Supabase
             toast.success("Appointment cancelled successfully");
           } catch (error) {
             console.error(error);

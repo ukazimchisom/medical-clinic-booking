@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 
 import { Roboto } from "next/font/google";
 import { Roboto_Mono as RobotoMono } from "next/font/google";
+import QueryProvider from "@/components/provider/QueryProvider";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -29,11 +30,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <QueryProvider>
       <Toaster position="top-right" richColors />
       <html lang="en" className={`${roboto.variable} ${robotoMono.variable}`}>
         <body className="font-sans">{children}</body>
       </html>
-    </>
+    </QueryProvider>
   );
 }
