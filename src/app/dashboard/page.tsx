@@ -1,5 +1,6 @@
 "use client";
 
+import { cancelAppointmentAction } from "@/app/actions/cancel-appointment";
 import { useQuery } from "@tanstack/react-query";
 import AppointmentSkeleton, {
   StatsSkeleton,
@@ -8,10 +9,7 @@ import { toast } from "sonner";
 import AuthGuard from "@/components/AuthGuard";
 import Navbar from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  cancelAppointment,
-  getUserAppointments,
-} from "@/services/appointment-service";
+import { getUserAppointments } from "@/services/appointment-service";
 import { Appointment } from "@/types";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -38,7 +36,7 @@ export default function DashboardPage() {
         label: "Yes, cancel",
         onClick: async () => {
           try {
-            await cancelAppointment(id);
+            await cancelAppointmentAction(id);
             await refetch(); // refetch appointments from Supabase
             toast.success("Appointment cancelled successfully");
           } catch (error) {

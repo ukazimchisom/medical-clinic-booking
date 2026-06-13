@@ -29,17 +29,39 @@ export async function getUserAppointments(
 }
 
 export async function cancelAppointment(appointmentId: string) {
-  const { error } = await supabase
+  // First fetch the appointment details needed for the email
+  const { data: appointment, error: fetchError } = await supabase
     .from("appointments")
-    .update({ status: "cancelled" })
+    .select(
+      `
+      appointment_date,
+      appointment_time,
+      doctors (
+        name
+      ),
+      profiles (
+        email
+      )
+    `,
+    )
     .eq("id", appointmentId)
-    .select();
+    .single();
 
-  if (error) {
-    throw new Error(error.message);
+  if (fetchError || !appointment) {
+    throw new Error("Appointment not found");
   }
 
-  return true;
+  // Then update the status to cancelled
+  const { error: updateError } = await supabase
+    .from("appointments")
+    .update({ status: "cancelled" })
+    .eq("id", appointmentId);
+
+  if (updateError) {
+    throw new Error(updateError.message);
+  }
+
+  return appointment;
 }
 
 export async function getBookedSlots(
