@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase-client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import SearchFilter from "@/components/ui/SearchFilter";
+import DoctorCardSkeleton from "@/components/ui/DoctorCardSkeleton";
 
 interface Doctor {
   id: string;
@@ -85,8 +86,13 @@ export default function DoctorsPage() {
       </section>
       <section className="mt-10 h-auto max-w-7xl mx-auto px-6 sm:px-12 py-10">
         {loading && (
-          <div className="flex justify-center items-center py-10">
-            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <DoctorCardSkeleton />
+            <DoctorCardSkeleton />
+            <DoctorCardSkeleton />
+            <DoctorCardSkeleton />
+            <DoctorCardSkeleton />
+            <DoctorCardSkeleton />
           </div>
         )}
 
