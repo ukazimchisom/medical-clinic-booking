@@ -63,3 +63,45 @@ export async function sendCancellationEmail({
     `,
   });
 }
+
+export async function sendRescheduleEmail({
+  to,
+  doctorName,
+  oldDate,
+  oldTime,
+  newDate,
+  newTime,
+}: {
+  to: string;
+  doctorName: string;
+  oldDate: string;
+  oldTime: string;
+  newDate: string;
+  newTime: string;
+}) {
+  await resend.emails.send({
+    from: "Clinic <onboarding@resend.dev>",
+    to,
+    subject: "Appointment Rescheduled Confirmation",
+    html: `
+      <h2>Appointment Rescheduled</h2>
+      <p>Your appointment has been successfully rescheduled.</p>
+
+      <h3>Previous Appointment</h3>
+      <ul>
+        <li><strong>Doctor:</strong> ${doctorName}</li>
+        <li><strong>Date:</strong> ${oldDate}</li>
+        <li><strong>Time:</strong> ${oldTime}</li>
+      </ul>
+
+      <h3>New Appointment</h3>
+      <ul>
+        <li><strong>Doctor:</strong> ${doctorName}</li>
+        <li><strong>Date:</strong> ${newDate}</li>
+        <li><strong>Time:</strong> ${newTime}</li>
+      </ul>
+
+      <p>Thank you for choosing our clinic.</p>
+    `,
+  });
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import RescheduleModal from "@/components/ui/RescheduleModal";
 import { cancelAppointmentAction } from "@/app/actions/cancel-appointment";
 import { useQuery } from "@tanstack/react-query";
 import AppointmentSkeleton, {
@@ -16,6 +17,11 @@ import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
+  const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<{
+    id: string;
+    doctorId: string;
+  } | null>(null);
 
   const {
     data: appointments = [],
@@ -158,12 +164,26 @@ export default function DashboardPage() {
                           </span>
                         </div>
                         {!isCancelled && (
-                          <button
-                            onClick={() => handleCancel(apt.id)}
-                            className="text-xs text-red-700 border border-red-200 rounded-md px-2.5 py-1 hover:bg-red-50 transition-colors"
-                          >
-                            Cancel
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                setSelectedAppointment({
+                                  id: apt.id,
+                                  doctorId: apt.doctor_id,
+                                });
+                                setRescheduleModalOpen(true);
+                              }}
+                              className="text-xs text-blue-700 border border-blue-200 rounded-md px-2.5 py-1 hover:bg-blue-50 transition-colors"
+                            >
+                              Reschedule
+                            </button>
+                            <button
+                              onClick={() => handleCancel(apt.id)}
+                              className="text-xs text-red-700 border border-red-200 rounded-md px-2.5 py-1 hover:bg-red-50 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -173,6 +193,18 @@ export default function DashboardPage() {
             </>
           )}
         </div>
+        {selectedAppointment && (
+          <RescheduleModal
+            isOpen={rescheduleModalOpen}
+            onClose={() => {
+              setRescheduleModalOpen(false);
+              setSelectedAppointment(null);
+            }}
+            appointmentId={selectedAppointment.id}
+            doctorId={selectedAppointment.doctorId}
+            onSuccess={() => refetch()}
+          />
+        )}
       </main>
     </AuthGuard>
   );

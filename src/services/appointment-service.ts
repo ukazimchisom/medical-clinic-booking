@@ -10,6 +10,7 @@ export async function getUserAppointments(
     .select(
       `
       id,
+      doctor_id,
       appointment_date,
       appointment_time,
       status,

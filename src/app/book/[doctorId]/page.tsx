@@ -1,5 +1,5 @@
 "use client";
-
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,6 +43,8 @@ export default function BookAppointmentPage() {
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     async function fetchSlots() {
@@ -119,6 +121,7 @@ export default function BookAppointmentPage() {
         appointment_time: data.appointment_time,
       });
       toast.success("Appointment booked successfully!");
+      queryClient.invalidateQueries({ queryKey: ["appointments", user?.id] });
       router.push("/dashboard");
     } catch (error: unknown) {
       setServerError(

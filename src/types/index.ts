@@ -12,6 +12,7 @@ export interface Doctor {
 
 export type Appointment = {
   id: string;
+  doctor_id: string;
   appointment_date: string;
   appointment_time: string;
   status: string;
