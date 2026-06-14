@@ -45,9 +45,15 @@ export default function Navbar() {
               >
                 My Appointments
               </Link>
+              <Link
+                href="/profile"
+                className="text-gray-700 hover:text-blue-600"
+              >
+                My Profile
+              </Link>
               <button
                 onClick={handleLogout}
-                className="px-4 py-1.5 text-sm rounded-md border text-white bg-red-600 hover:bg-red-500 transition-all"
+                className="px-4 py-1.5 text-sm rounded-md border border-red-300 text-red-600 bg-white hover:bg-red-600 hover:text-white hover:border-red-600 transition-all"
               >
                 Log out
               </button>
@@ -117,12 +123,19 @@ export default function Navbar() {
               >
                 My Appointments
               </Link>
+              <Link
+                href="/profile"
+                className="hover:text-blue-600"
+                onClick={() => setIsOpen(false)}
+              >
+                My Profile
+              </Link>
               <button
                 onClick={() => {
                   setIsOpen(false);
                   handleLogout();
                 }}
-                className="text-center px-4 py-1.5 text-sm rounded-md border bg-red-600 text-white hover:bg-red-500 hover:text-white transition-all w-full"
+                className="text-left px-4 py-1.5 text-sm rounded-md border border-red-300 text-red-600 bg-white hover:bg-red-600 hover:text-white hover:border-red-600 transition-all w-full"
               >
                 Log out
               </button>
