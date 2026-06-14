@@ -5,6 +5,7 @@ import DoctorCard from "@/components/ui/DoctorCard";
 import { supabase } from "@/lib/supabase-client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import SearchFilter from "@/components/ui/SearchFilter";
 
 interface Doctor {
   id: string;
@@ -26,6 +27,7 @@ export default function DoctorsPage() {
     ...new Set(doctors.map((d) => d.specialty)),
   ];
   const [selectedSpecialty, setSelectedSpecialty] = useState("All Specialties");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     async function loadDoctors() {
@@ -43,10 +45,17 @@ export default function DoctorsPage() {
     loadDoctors();
   }, []);
 
-  const filteredDoctors =
-    selectedSpecialty === "All Specialties"
-      ? doctors
-      : doctors.filter((doctor) => doctor.specialty === selectedSpecialty);
+  const filteredDoctors = doctors.filter((doctor) => {
+    const matchesSpecialty =
+      selectedSpecialty === "All Specialties" ||
+      doctor.specialty === selectedSpecialty;
+
+    const matchesSearch = doctor.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    return matchesSpecialty && matchesSearch;
+  });
 
   return (
     <>
@@ -82,24 +91,48 @@ export default function DoctorsPage() {
         )}
 
         {!loading && doctors.length > 0 && (
-          <select
-            value={selectedSpecialty}
-            onChange={(e) => setSelectedSpecialty(e.target.value)}
-            className="mb-6 p-2 rounded border"
-          >
-            {specialties.map((spec) => (
-              <option key={spec} value={spec}>
-                {spec}
-              </option>
-            ))}
-          </select>
+          <SearchFilter
+            search={search}
+            onSearchChange={setSearch}
+            selectedSpecialty={selectedSpecialty}
+            onSpecialtyChange={setSelectedSpecialty}
+            specialties={specialties}
+          />
         )}
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDoctors.map((doctor) => (
-            <DoctorCard key={doctor.id} doctor={doctor} />
-          ))}
-        </div>
+        {filteredDoctors.length === 0 && !loading ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <svg
+                className="w-8 h-8 text-gray-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                />
+              </svg>
+            </div>
+            <p className="text-gray-700 font-medium text-lg">
+              No doctors found
+            </p>
+            <p className="text-gray-400 text-sm mt-1">
+              Try adjusting your search or filter to find what you are looking
+              for
+            </p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDoctors.map((doctor) => (
+              <DoctorCard key={doctor.id} doctor={doctor} />
+            ))}
+          </div>
+        )}
       </section>
     </>
   );
