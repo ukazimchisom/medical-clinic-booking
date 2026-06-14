@@ -2,52 +2,37 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/lib/supabase-client";
 import { updateProfile } from "@/app/actions/update-profile";
 import Navbar from "@/components/layout/Navbar";
 import AuthGuard from "@/components/AuthGuard";
 import Image from "next/image";
 import { toast } from "sonner";
-
-interface Profile {
-  full_name: string;
-  email: string;
-  avatar_url: string | null;
-  role: string;
-}
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getProfile } from "@/services/appointment-service";
 
 export default function ProfilePage() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [fullName, setFullName] = useState("");
+  const [loading, setLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch profile
+  const queryClient = useQueryClient();
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: () => getProfile(user!.id),
+    enabled: !!user,
+  });
+
+  // Sync profile data into local state when it loads
   useEffect(() => {
-    async function fetchProfile() {
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("full_name, email, avatar_url, role")
-        .eq("id", user.id)
-        .single();
-
-      if (error) {
-        console.error("Profile fetch error:", JSON.stringify(error, null, 2));
-        return;
-      }
-
-      setProfile(data);
-      setFullName(data.full_name || "");
-      setPreviewUrl(data.avatar_url || null);
+    if (profile) {
+      setFullName(profile.full_name || "");
+      setPreviewUrl(profile.avatar_url || null);
     }
-
-    fetchProfile();
-  }, [user]);
+  }, [profile]);
 
   // Handle photo selection
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -75,6 +60,9 @@ export default function ProfilePage() {
         fullName,
         photoFile: photoFormData,
       });
+
+      // Invalidate cache so profile refetches fresh data
+      await queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });
 
       toast.success("Profile updated successfully");
     } catch (error: any) {

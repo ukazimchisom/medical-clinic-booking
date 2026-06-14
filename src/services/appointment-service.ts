@@ -89,3 +89,22 @@ export async function getDoctors(): Promise<Doctor[]> {
 
   return data || [];
 }
+
+interface Profile {
+  full_name: string;
+  email: string;
+  avatar_url: string | null;
+  role: string;
+}
+
+export async function getProfile(userId: string): Promise<Profile> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("full_name, email, avatar_url, role")
+    .eq("id", userId)
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}
