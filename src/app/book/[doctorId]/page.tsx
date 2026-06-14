@@ -120,9 +120,10 @@ export default function BookAppointmentPage() {
         appointment_date: data.appointment_date,
         appointment_time: data.appointment_time,
       });
-      toast.success("Appointment booked successfully!");
       queryClient.invalidateQueries({ queryKey: ["appointments", user?.id] });
-      router.push("/dashboard");
+      router.push(
+        `/booking-confirmation?doctor=${encodeURIComponent(doctor.name)}&date=${data.appointment_date}&time=${data.appointment_time}`,
+      );
     } catch (error: unknown) {
       setServerError(
         error instanceof Error ? error.message : "An error occurred",
