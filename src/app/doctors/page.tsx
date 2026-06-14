@@ -2,11 +2,12 @@
 
 import Navbar from "@/components/layout/Navbar";
 import DoctorCard from "@/components/ui/DoctorCard";
-import { supabase } from "@/lib/supabase-client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import SearchFilter from "@/components/ui/SearchFilter";
 import DoctorCardSkeleton from "@/components/ui/DoctorCardSkeleton";
+import { useQuery } from "@tanstack/react-query";
+import { getDoctors } from "@/services/appointment-service";
 
 interface Doctor {
   id: string;
@@ -20,31 +21,19 @@ interface Doctor {
 }
 
 export default function DoctorsPage() {
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedSpecialty, setSelectedSpecialty] = useState("All Specialties");
+  const [search, setSearch] = useState("");
+
+  const { data: doctors = [], isLoading: loading } = useQuery({
+    queryKey: ["doctors"],
+    queryFn: getDoctors,
+    staleTime: 1000 * 60 * 10, // cache doctors for 10 minutes
+  });
 
   const specialties = [
     "All Specialties",
     ...new Set(doctors.map((d) => d.specialty)),
   ];
-  const [selectedSpecialty, setSelectedSpecialty] = useState("All Specialties");
-  const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    async function loadDoctors() {
-      const { data, error } = await supabase.from("doctors").select("*");
-
-      if (error) {
-        console.error(error);
-      } else {
-        setDoctors(data || []);
-      }
-
-      setLoading(false);
-    }
-
-    loadDoctors();
-  }, []);
 
   const filteredDoctors = doctors.filter((doctor) => {
     const matchesSpecialty =
