@@ -13,6 +13,7 @@ import { rescheduleAppointment } from "@/app/actions/reschedule-appointment";
 import Calendar from "@/components/ui/Calendar";
 import Modal from "@/components/ui/Modal";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 interface RescheduleModalProps {
   isOpen: boolean;
@@ -39,7 +40,6 @@ export default function RescheduleModal({
   onSuccess,
 }: RescheduleModalProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -51,20 +51,16 @@ export default function RescheduleModal({
     resolver: zodResolver(appointmentSchema),
   });
 
-  // Fetch booked slots when date changes
-  useEffect(() => {
-    async function fetchSlots() {
-      if (!selectedDate) return;
-      const formattedDate = format(selectedDate, "yyyy-MM-dd");
-      try {
-        const slots = await getBookedSlots(doctorId, formattedDate);
-        setBookedSlots(slots);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchSlots();
-  }, [selectedDate, doctorId]);
+  const formattedDate = selectedDate
+    ? format(selectedDate, "yyyy-MM-dd")
+    : null;
+
+  // Fetch booked slots for the selected date and doctor
+  const { data: bookedSlots = [] } = useQuery({
+    queryKey: ["bookedSlots", doctorId, formattedDate],
+    queryFn: () => getBookedSlots(doctorId, formattedDate!),
+    enabled: !!selectedDate && !!doctorId,
+  });
 
   // Sync selected date with React Hook Form
   useEffect(() => {
