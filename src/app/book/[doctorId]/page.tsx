@@ -68,10 +68,17 @@ export default function BookAppointmentPage() {
     resolver: zodResolver(appointmentSchema),
   });
 
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.replace(`/login?redirect=/book/${doctorId}`);
+    }
+  }, [user, authLoading, router, doctorId]);
 
   useEffect(() => {
     if (selectedDate) {
@@ -90,14 +97,14 @@ export default function BookAppointmentPage() {
         .single();
 
       if (error) {
-        console.error(error);
+        console.error("Doctor fetch error:", JSON.stringify(error, null, 2));
       } else {
         setDoctor(data);
       }
     }
 
-    if (doctorId) fetchDoctor();
-  }, [doctorId]);
+    if (doctorId && !authLoading && user) fetchDoctor();
+  }, [doctorId, authLoading, user]);
 
   async function onSubmit(data: AppointmentFormData) {
     if (!user) {
@@ -133,7 +140,7 @@ export default function BookAppointmentPage() {
     setLoading(false);
   }
 
-  if (!doctor) {
+  if (authLoading || !doctor) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
