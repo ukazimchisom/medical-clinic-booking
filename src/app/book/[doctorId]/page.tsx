@@ -33,23 +33,18 @@ export default function BookAppointmentPage() {
   const router = useRouter();
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
 
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    async function fetchSlots() {
-      if (!selectedDate) return;
-      const formattedDate = format(selectedDate, "yyyy-MM-dd");
-      try {
-        const slots = await getBookedSlots(doctorId, formattedDate);
-        setBookedSlots(slots);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchSlots();
-  }, [selectedDate, doctorId]);
+  const formattedDate = selectedDate
+    ? format(selectedDate, "yyyy-MM-dd")
+    : null;
+
+  const { data: bookedSlots = [] } = useQuery({
+    queryKey: ["bookedSlots", doctorId, formattedDate],
+    queryFn: () => getBookedSlots(doctorId, formattedDate!),
+    enabled: !!selectedDate && !!doctorId,
+  });
 
   const {
     handleSubmit,
