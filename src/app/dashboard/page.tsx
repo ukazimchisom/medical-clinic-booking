@@ -21,6 +21,9 @@ export default function DashboardPage() {
     id: string;
     doctorId: string;
   } | null>(null);
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "scheduled" | "cancelled"
+  >("all");
 
   const {
     data: appointments = [],
@@ -34,6 +37,11 @@ export default function DashboardPage() {
 
   const scheduled = appointments.filter((a) => a.status === "scheduled");
   const cancelled = appointments.filter((a) => a.status === "cancelled");
+
+  const filteredAppointments = appointments.filter((a) => {
+    if (statusFilter === "all") return true;
+    return a.status === statusFilter;
+  });
 
   async function handleCancel(id: string) {
     toast("Are you sure you want to cancel this appointment?", {
@@ -111,83 +119,117 @@ export default function DashboardPage() {
                 ))}
               </div>
 
-              <div className="flex flex-col gap-3">
-                {appointments.map((apt, i) => {
-                  const isCancelled = apt.status === "cancelled";
-                  return (
-                    <div
-                      key={apt.id}
-                      className={`bg-white border border-gray-100 rounded-xl p-4 flex items-center justify-between gap-4 transition-opacity ${isCancelled ? "opacity-60" : ""}`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-gray-100">
-                          <Image
-                            src={apt.doctors?.photo || "/default-doctor.jpg"}
-                            alt={apt.doctors?.name || "Doctor"}
-                            width={40}
-                            height={40}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-800 truncate">
-                            {apt.doctors?.name || "Unknown Doctor"}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {apt.doctors?.specialty || ""}
-                          </p>
-                        </div>
-                      </div>
+              {/* Filter buttons */}
+              <div className="flex items-center gap-2 mb-4">
+                {[
+                  { label: "All", value: "all" },
+                  { label: "Scheduled", value: "scheduled" },
+                  { label: "Cancelled", value: "cancelled" },
+                ].map(({ label, value }) => (
+                  <button
+                    key={value}
+                    onClick={() =>
+                      setStatusFilter(
+                        value as "all" | "scheduled" | "cancelled",
+                      )
+                    }
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border
+        ${
+          statusFilter === value
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600"
+        }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
 
-                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">
-                            {new Date(apt.appointment_date).toLocaleDateString(
-                              "en-US",
-                              {
+              <div className="flex flex-col gap-3">
+                {filteredAppointments.length === 0 ? (
+                  <div className="bg-white border border-gray-100 rounded-xl px-6 py-12 text-center">
+                    <p className="text-gray-500 text-sm">
+                      No {statusFilter === "all" ? "" : statusFilter}{" "}
+                      appointments found.
+                    </p>
+                  </div>
+                ) : (
+                  filteredAppointments.map((apt) => {
+                    const isCancelled = apt.status === "cancelled";
+                    return (
+                      <div
+                        key={apt.id}
+                        className={`bg-white border border-gray-100 rounded-xl p-4 flex items-center justify-between gap-4 transition-opacity ${isCancelled ? "opacity-60" : ""}`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-gray-100">
+                            <Image
+                              src={apt.doctors?.photo || "/default-doctor.jpg"}
+                              alt={apt.doctors?.name || "Doctor"}
+                              width={40}
+                              height={40}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-800 truncate">
+                              {apt.doctors?.name || "Unknown Doctor"}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {apt.doctors?.specialty || ""}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">
+                              {new Date(
+                                apt.appointment_date,
+                              ).toLocaleDateString("en-US", {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
-                              },
-                            )}{" "}
-                            · {apt.appointment_time}
-                          </span>
-                          <span
-                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                              isCancelled
-                                ? "bg-red-50 text-red-800"
-                                : "bg-green-50 text-green-800"
-                            }`}
-                          >
-                            {apt.status}
-                          </span>
-                        </div>
-                        {!isCancelled && (
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => {
-                                setSelectedAppointment({
-                                  id: apt.id,
-                                  doctorId: apt.doctor_id,
-                                });
-                                setRescheduleModalOpen(true);
-                              }}
-                              className="text-xs text-blue-700 border border-blue-200 rounded-md px-2.5 py-1 hover:bg-blue-50 transition-colors"
+                              })}{" "}
+                              · {apt.appointment_time}
+                            </span>
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                isCancelled
+                                  ? "bg-red-50 text-red-800"
+                                  : "bg-green-50 text-green-800"
+                              }`}
                             >
-                              Reschedule
-                            </button>
-                            <button
-                              onClick={() => handleCancel(apt.id)}
-                              className="text-xs text-red-700 border border-red-200 rounded-md px-2.5 py-1 hover:bg-red-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
+                              {apt.status}
+                            </span>
                           </div>
-                        )}
+                          {!isCancelled && (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedAppointment({
+                                    id: apt.id,
+                                    doctorId: apt.doctor_id,
+                                  });
+                                  setRescheduleModalOpen(true);
+                                }}
+                                className="text-xs text-blue-700 border border-blue-200 rounded-md px-2.5 py-1 hover:bg-blue-50 transition-colors"
+                              >
+                                Reschedule
+                              </button>
+                              <button
+                                onClick={() => handleCancel(apt.id)}
+                                className="text-xs text-red-700 border border-red-200 rounded-md px-2.5 py-1 hover:bg-red-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </>
           )}
