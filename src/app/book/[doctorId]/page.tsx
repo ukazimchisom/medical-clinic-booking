@@ -138,6 +138,27 @@ export default function BookAppointmentPage() {
       <Navbar />
 
       <div className="max-w-xl md:max-w-5xl mx-auto px-6 py-12">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-6"
+        >
+          <svg
+            className="w-4 h-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back to Doctors
+        </button>
+
         <h1 className="text-2xl font-bold mb-6">Book an Appointment</h1>
         <p className="text-gray-600 mb-6">
           Please select a date and time for your appointment.
