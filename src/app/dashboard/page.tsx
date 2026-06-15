@@ -11,9 +11,8 @@ import AuthGuard from "@/components/AuthGuard";
 import Navbar from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserAppointments } from "@/services/appointment-service";
-import { Appointment } from "@/types";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();

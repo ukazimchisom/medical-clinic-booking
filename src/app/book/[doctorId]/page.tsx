@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDoctor, getBookedSlots } from "@/services/appointment-service";
+import BookingPageSkeleton from "@/components/ui/BookingPageSkeleton";
 
 import Calendar from "@/components/ui/Calendar";
 import { format } from "date-fns";
@@ -116,9 +117,10 @@ export default function BookAppointmentPage() {
 
   if (authLoading || doctorLoading || !doctor) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <main className="min-h-screen bg-gray-50 mt-12">
+        <Navbar />
+        <BookingPageSkeleton />
+      </main>
     );
   }
 
