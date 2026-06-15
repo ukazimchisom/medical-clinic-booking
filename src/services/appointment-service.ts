@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase-client";
 
 import { Appointment } from "@/types";
+import { Doctor } from "@/types";
 
 export async function getUserAppointments(
   userId: string,
@@ -80,8 +81,6 @@ export async function getBookedSlots(
   return data.map((row) => row.appointment_time);
 }
 
-import { Doctor } from "@/types";
-
 export async function getDoctors(): Promise<Doctor[]> {
   const { data, error } = await supabase.from("doctors").select("*");
 
@@ -102,6 +101,18 @@ export async function getProfile(userId: string): Promise<Profile> {
     .from("profiles")
     .select("full_name, email, avatar_url, role")
     .eq("id", userId)
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}
+
+export async function getDoctor(doctorId: string): Promise<Doctor> {
+  const { data, error } = await supabase
+    .from("doctors")
+    .select("*")
+    .eq("id", doctorId)
     .single();
 
   if (error) throw new Error(error.message);

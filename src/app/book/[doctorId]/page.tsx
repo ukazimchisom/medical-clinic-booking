@@ -1,5 +1,5 @@
 "use client";
-import { useQueryClient } from "@tanstack/react-query";
+
 import { toast } from "sonner";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,12 +7,13 @@ import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getDoctor, getBookedSlots } from "@/services/appointment-service";
 
 import Calendar from "@/components/ui/Calendar";
 import { format } from "date-fns";
 
 import { useEffect } from "react";
-import { supabase } from "@/lib/supabase-client";
 
 import Navbar from "@/components/layout/Navbar";
 import Button from "@/components/ui/Button";
@@ -25,22 +26,12 @@ import {
 } from "@/lib/validators/appointment";
 import Image from "next/image";
 
-import { getBookedSlots } from "@/services/appointment-service";
-
-interface Doctor {
-  id: string;
-  name: string;
-  specialty: string;
-  photo?: string;
-}
-
 export default function BookAppointmentPage() {
   const params = useParams();
   const doctorId = params.doctorId as string;
 
   const router = useRouter();
 
-  const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
 
@@ -88,23 +79,11 @@ export default function BookAppointmentPage() {
     }
   }, [selectedDate, setValue]);
 
-  useEffect(() => {
-    async function fetchDoctor() {
-      const { data, error } = await supabase
-        .from("doctors")
-        .select("*")
-        .eq("id", doctorId)
-        .single();
-
-      if (error) {
-        console.error("Doctor fetch error:", JSON.stringify(error, null, 2));
-      } else {
-        setDoctor(data);
-      }
-    }
-
-    if (doctorId && !authLoading && user) fetchDoctor();
-  }, [doctorId, authLoading, user]);
+  const { data: doctor, isLoading: doctorLoading } = useQuery({
+    queryKey: ["doctor", doctorId],
+    queryFn: () => getDoctor(doctorId),
+    enabled: !!doctorId && !!user && !authLoading,
+  });
 
   async function onSubmit(data: AppointmentFormData) {
     if (!user) {
@@ -140,7 +119,7 @@ export default function BookAppointmentPage() {
     setLoading(false);
   }
 
-  if (authLoading || !doctor) {
+  if (authLoading || doctorLoading || !doctor) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
