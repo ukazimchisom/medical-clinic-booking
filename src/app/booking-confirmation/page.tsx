@@ -26,6 +26,27 @@ function BookingConfirmationContent() {
     <main className="min-h-screen bg-gray-50 mt-12">
       <Navbar />
       <div className="max-w-lg mx-auto px-6 py-20 flex flex-col items-center text-center">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-8 self-start"
+        >
+          <svg
+            className="w-4 h-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back
+        </button>
+
         {/* Success icon */}
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
           <svg
