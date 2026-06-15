@@ -5,12 +5,24 @@ import Link from "next/link";
 import Button from "../ui/Button";
 import { HiMenu, HiX } from "react-icons/hi";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation"; // fix
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { getUserAppointments } from "@/services/appointment-service";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const { user, logout } = useAuth();
+
+  const { data: appointments = [] } = useQuery({
+    queryKey: ["appointments", user?.id],
+    queryFn: () => getUserAppointments(user!.id),
+    enabled: !!user,
+  });
+
+  const scheduledCount = appointments.filter(
+    (a) => a.status === "scheduled",
+  ).length;
 
   async function handleLogout() {
     await logout();
@@ -41,9 +53,14 @@ export default function Navbar() {
             <>
               <Link
                 href="/dashboard"
-                className="text-gray-700 hover:text-blue-600"
+                className="flex items-center gap-1.5 text-gray-700 hover:text-blue-600"
               >
                 My Appointments
+                {scheduledCount > 0 && (
+                  <span className="bg-blue-600 text-white text-xs font-medium w-5 h-5 rounded-full flex items-center justify-center">
+                    {scheduledCount > 9 ? "9+" : scheduledCount}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/profile"
@@ -118,10 +135,15 @@ export default function Navbar() {
             <>
               <Link
                 href="/dashboard"
-                className="hover:text-blue-600"
+                className="flex items-center gap-1.5 hover:text-blue-600"
                 onClick={() => setIsOpen(false)}
               >
                 My Appointments
+                {scheduledCount > 0 && (
+                  <span className="bg-blue-600 text-white text-xs font-medium w-5 h-5 rounded-full flex items-center justify-center">
+                    {scheduledCount > 9 ? "9+" : scheduledCount}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/profile"
