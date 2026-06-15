@@ -23,7 +23,7 @@ export async function getUserAppointments(
     `,
     )
     .eq("user_id", userId)
-    .order("appointment_date", { ascending: false });
+    .order("appointment_date", { ascending: true });
 
   if (error) throw new Error(error.message);
 
