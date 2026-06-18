@@ -7,17 +7,26 @@ import { HiMenu, HiX } from "react-icons/hi";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { getUserAppointments } from "@/services/appointment-service";
+import {
+  getProfile,
+  getUserAppointments,
+} from "@/services/appointment-service";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
 
   const { data: appointments = [] } = useQuery({
     queryKey: ["appointments", user?.id],
     queryFn: () => getUserAppointments(user!.id),
-    enabled: !!user,
+    enabled: !!user && !authLoading,
+  });
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: () => getProfile(user!.id),
+    enabled: !!user && !authLoading,
   });
 
   const scheduledCount = appointments.filter(
@@ -68,6 +77,14 @@ export default function Navbar() {
               >
                 My Profile
               </Link>
+              {profile?.role === "admin" && (
+                <Link
+                  href="/admin"
+                  className="text-gray-700 hover:text-purple-600 font-medium"
+                >
+                  Admin
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
                 className="px-4 py-1.5 text-sm rounded-md border border-red-300 text-red-600 bg-white hover:bg-red-600 hover:text-white hover:border-red-600 transition-all"
@@ -152,6 +169,15 @@ export default function Navbar() {
               >
                 My Profile
               </Link>
+              {profile?.role === "admin" && (
+                <Link
+                  href="/admin"
+                  className="hover:text-purple-600 font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Admin
+                </Link>
+              )}
               <button
                 onClick={() => {
                   setIsOpen(false);

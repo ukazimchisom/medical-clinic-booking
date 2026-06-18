@@ -8,7 +8,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getDoctor, getBookedSlots } from "@/services/appointment-service";
+import { getBookedSlots } from "@/services/appointment-service";
+import { getDoctor } from "@/services/doctor-service";
 import BookingPageSkeleton from "@/components/ui/BookingPageSkeleton";
 
 import Calendar from "@/components/ui/Calendar";

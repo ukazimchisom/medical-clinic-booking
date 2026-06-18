@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase-client";
+import { Doctor } from "@/types";
 
 export async function createDoctor(data: {
   name: string;
@@ -14,27 +15,24 @@ export async function createDoctor(data: {
   return true;
 }
 
-export async function getDoctors() {
+export async function getDoctor(doctorId: string): Promise<Doctor> {
   const { data, error } = await supabase
     .from("doctors")
     .select("*")
-    .order("created_at", { ascending: false });
+    .eq("id", doctorId)
+    .single();
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  if (error) throw new Error(error.message);
 
   return data;
 }
 
-export async function deleteDoctor(id: string) {
-  const { error } = await supabase.from("doctors").delete().eq("id", id);
+export async function getDoctors(): Promise<Doctor[]> {
+  const { data, error } = await supabase.from("doctors").select("*");
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  if (error) throw new Error(error.message);
 
-  return true;
+  return data || [];
 }
 
 export async function getDoctorById(id: string) {
@@ -65,5 +63,12 @@ export async function updateDoctor(
     throw new Error(error.message);
   }
 
+  return true;
+}
+
+export async function deleteDoctor(doctorId: string) {
+  const { error } = await supabase.from("doctors").delete().eq("id", doctorId);
+
+  if (error) throw new Error(error.message);
   return true;
 }

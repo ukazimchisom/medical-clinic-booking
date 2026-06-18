@@ -108,14 +108,61 @@ export async function getProfile(userId: string): Promise<Profile> {
   return data;
 }
 
-export async function getDoctor(doctorId: string): Promise<Doctor> {
+//*********************************************************************** */
+
+export async function getAllAppointments() {
+  const { data: appointmentsData, error: appointmentsError } = await supabase
+    .from("appointments")
+    .select(
+      `
+      id,
+      user_id,
+      appointment_date,
+      appointment_time,
+      status,
+      doctors (
+        name,
+        specialty
+      )
+    `,
+    )
+    .order("appointment_date", { ascending: true });
+
+  if (appointmentsError) throw new Error(appointmentsError.message);
+
+  // Fetch all profiles to match user_id to email and name
+  const { data: profilesData, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, full_name, email");
+
+  if (profilesError) throw new Error(profilesError.message);
+
+  // Merge appointments with profile data
+  const appointments = (appointmentsData || []).map((apt) => {
+    const profile = profilesData?.find((p) => p.id === apt.user_id);
+    return {
+      ...apt,
+      user_email: profile?.email || "Unknown",
+      user_name: profile?.full_name || "Unknown",
+    };
+  });
+
+  return appointments;
+}
+
+export async function getAllUsers() {
   const { data, error } = await supabase
-    .from("doctors")
-    .select("*")
-    .eq("id", doctorId)
-    .single();
+    .from("profiles")
+    .select("id, full_name, email, role, created_at")
+    .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
+  return data || [];
+}
 
-  return data;
+export async function deleteDoctor(doctorId: string) {
+  const { error } = await supabase.from("doctors").delete().eq("id", doctorId);
+
+  if (error) throw new Error(error.message);
+  return true;
 }

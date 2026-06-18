@@ -39,7 +39,7 @@ export default function Hero() {
             </Link>
 
             <Link href="/doctors">
-              <Button className="bg-gray-800 hover:bg-gray-900">
+              <Button className="bg-green-600 hover:bg-gray-900">
                 Book Appointment
               </Button>
             </Link>
