@@ -20,6 +20,9 @@ export default function DashboardPage() {
   const [selectedAppointment, setSelectedAppointment] = useState<{
     id: string;
     doctorId: string;
+    doctorName: string;
+    currentDate: string;
+    currentTime: string;
   } | null>(null);
   const [statusFilter, setStatusFilter] = useState<
     "all" | "scheduled" | "cancelled"
@@ -210,6 +213,9 @@ export default function DashboardPage() {
                                   setSelectedAppointment({
                                     id: apt.id,
                                     doctorId: apt.doctor_id,
+                                    doctorName: apt.doctors?.name || "",
+                                    currentDate: apt.appointment_date,
+                                    currentTime: apt.appointment_time,
                                   });
                                   setRescheduleModalOpen(true);
                                 }}
@@ -243,6 +249,9 @@ export default function DashboardPage() {
             }}
             appointmentId={selectedAppointment.id}
             doctorId={selectedAppointment.doctorId}
+            doctorName={selectedAppointment.doctorName}
+            currentDate={selectedAppointment.currentDate}
+            currentTime={selectedAppointment.currentTime}
             onSuccess={() => refetch()}
           />
         )}

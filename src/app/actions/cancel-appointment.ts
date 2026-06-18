@@ -46,17 +46,5 @@ export async function cancelAppointmentAction(appointmentId: string) {
     throw new Error(updateError.message);
   }
 
-  // Send cancellation email
-  try {
-    await sendCancellationEmail({
-      to: user.email!,
-      doctorName: (appointment.doctors as any).name,
-      date: appointment.appointment_date,
-      time: appointment.appointment_time,
-    });
-  } catch (err) {
-    console.error("Failed to send cancellation email:", err);
-  }
-
   return true;
 }

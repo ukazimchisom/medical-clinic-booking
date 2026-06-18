@@ -14,12 +14,17 @@ import Calendar from "@/components/ui/Calendar";
 import Modal from "@/components/ui/Modal";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
+import { sendRescheduleEmailJS } from "@/lib/emailjs";
+import { useAuth } from "@/hooks/useAuth";
 
 interface RescheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
   appointmentId: string;
   doctorId: string;
+  doctorName: string;
+  currentDate: string;
+  currentTime: string;
   onSuccess: () => void;
 }
 
@@ -37,11 +42,15 @@ export default function RescheduleModal({
   onClose,
   appointmentId,
   doctorId,
+  doctorName,
+  currentDate,
+  currentTime,
   onSuccess,
 }: RescheduleModalProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const {
     handleSubmit,
@@ -74,20 +83,40 @@ export default function RescheduleModal({
   async function onSubmit(data: AppointmentFormData) {
     setLoading(true);
     try {
+      // Fetch current appointment details before rescheduling
+      const oldDate = currentDate;
+      const oldTime = currentTime;
+
       await rescheduleAppointment({
         appointmentId,
         newDate: data.appointment_date,
         newTime: data.appointment_time,
       });
+
       toast.success("Appointment rescheduled successfully");
       onSuccess();
       onClose();
+
+      // Send reschedule email via EmailJS
+      if (user?.email && doctorName) {
+        try {
+          await sendRescheduleEmailJS({
+            to: user.email,
+            doctorName,
+            oldDate: oldDate || "",
+            oldTime: oldTime || "",
+            newDate: data.appointment_date,
+            newTime: data.appointment_time,
+          });
+        } catch (emailError) {
+          console.error("Failed to send reschedule email:", emailError);
+        }
+      }
     } catch (error: any) {
       toast.error(error.message);
     }
     setLoading(false);
   }
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Reschedule Appointment">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -129,8 +158,8 @@ export default function RescheduleModal({
                       isBooked
                         ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed line-through"
                         : isSelected
-                          ? "bg-blue-600 text-white border-blue-600 font-medium"
-                          : "bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:text-blue-600"
+                          ? "bg-green-400 text-white border-green-400 font-medium"
+                          : "bg-white text-gray-700 border-gray-200 hover:border-green-400 hover:text-green-600"
                     }`}
                 >
                   {label}
@@ -149,7 +178,7 @@ export default function RescheduleModal({
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+          className="w-full bg-green-400 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-500 transition-colors disabled:opacity-50"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">

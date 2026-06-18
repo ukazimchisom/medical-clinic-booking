@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/lib/supabase-server";
-import { sendAppointmentEmail } from "@/lib/email";
 
 export async function bookAppointment({
   email,
@@ -63,18 +62,6 @@ export async function bookAppointment({
 
   if (insertError) {
     throw new Error(insertError.message);
-  }
-
-  // Send confirmation email
-  try {
-    await sendAppointmentEmail({
-      to: email,
-      doctorName: doctorNameReal,
-      date: appointment_date,
-      time: appointment_time,
-    });
-  } catch (err) {
-    console.error("Failed to send email:", err);
   }
 
   return true;

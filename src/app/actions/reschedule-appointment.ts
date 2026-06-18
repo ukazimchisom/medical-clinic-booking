@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/lib/supabase-server";
-import { sendRescheduleEmail } from "@/lib/email";
 
 export async function rescheduleAppointment({
   appointmentId,
@@ -68,20 +67,6 @@ export async function rescheduleAppointment({
 
   if (updateError) {
     throw new Error(updateError.message);
-  }
-
-  // Send reschedule confirmation email
-  try {
-    await sendRescheduleEmail({
-      to: user.email!,
-      doctorName: (appointment.doctors as any).name,
-      oldDate: appointment.appointment_date,
-      oldTime: appointment.appointment_time,
-      newDate,
-      newTime,
-    });
-  } catch (err) {
-    console.error("Failed to send reschedule email:", err);
   }
 
   return true;

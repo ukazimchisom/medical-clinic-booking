@@ -4,6 +4,9 @@ import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import { Suspense } from "react";
+import { useEffect, useRef } from "react";
+import { sendBookingEmailJS } from "@/lib/emailjs";
+import { useAuth } from "@/hooks/useAuth";
 
 function BookingConfirmationContent() {
   const searchParams = useSearchParams();
@@ -21,6 +24,31 @@ function BookingConfirmationContent() {
         year: "numeric",
       })
     : "";
+
+  const { user } = useAuth();
+  const emailSent = useRef(false);
+
+  useEffect(() => {
+    async function sendEmail() {
+      if (!user?.email || !doctorName || !date || !time) return;
+      if (emailSent.current) return;
+
+      emailSent.current = true;
+
+      try {
+        await sendBookingEmailJS({
+          to: user.email,
+          doctorName: doctorName,
+          date: date,
+          time: time,
+        });
+      } catch (error) {
+        console.error("Failed to send booking email:", error);
+      }
+    }
+
+    sendEmail();
+  }, [user, doctorName, date, time]);
 
   return (
     <main className="min-h-screen bg-gray-50 mt-12">
@@ -107,7 +135,7 @@ function BookingConfirmationContent() {
         <div className="flex flex-col sm:flex-row gap-3 w-full">
           <button
             onClick={() => router.push("/dashboard")}
-            className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="flex-1 bg-green-400 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-500 transition-colors"
           >
             View My Appointments
           </button>
