@@ -93,12 +93,6 @@ export default function Services() {
             className="w-full h-36 object-cover rounded mb-4"
           />
         </div>
-        <Link
-          href="/doctors"
-          className="text-gray-400 hover:text-blue-400 text-lg font-semibold text-center"
-        >
-          view all doctors
-        </Link>
       </div>
 
       <div className="grid template-columns-1 md:grid-cols-2 gap-10 rounded-lg flex-col md:flex-row mt-5 md:p-12">
