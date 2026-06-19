@@ -68,6 +68,7 @@ export default function DoctorsPage() {
               alt="Doctors Hero"
               width={800}
               height={500}
+              priority
               className="w-full h-[300px] md:h-[450px] object-cover rounded-lg shadow-lg"
             />
           </div>

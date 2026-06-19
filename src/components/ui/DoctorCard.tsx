@@ -17,7 +17,7 @@ export default function DoctorCard({ doctor }: Props) {
         alt={doctor.name}
         width={96}
         height={96}
-        className="rounded-full mb-4"
+        className="rounded-full mb-4 w-auto h-auto"
       />
       <h3 className="text-lg font-semibold">{doctor.name}</h3>
 
