@@ -139,8 +139,8 @@ export default function DashboardPage() {
                     className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border
         ${
           statusFilter === value
-            ? "bg-blue-600 text-white border-blue-600"
-            : "bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600"
+            ? "bg-green-600 text-white border-green-600"
+            : "bg-white text-gray-600 border-gray-200 hover:border-green-400 hover:text-green-600"
         }`}
                   >
                     {label}

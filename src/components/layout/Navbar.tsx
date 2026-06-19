@@ -5,7 +5,7 @@ import Link from "next/link";
 import Button from "../ui/Button";
 import { HiMenu, HiX } from "react-icons/hi";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
   getProfile,
@@ -15,6 +15,7 @@ import {
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const { user, logout, loading: authLoading } = useAuth();
 
   const { data: appointments = [] } = useQuery({
@@ -38,49 +39,39 @@ export default function Navbar() {
     router.push("/login");
   }
 
+  const isActive = (href: string) => pathname === href;
+
   return (
-    <nav className="w-full border-b bg-white fixed top-0 z-50">
+    <nav className="w-full border-b bg-slate-200 fixed top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6 sm:px-12">
-        <Link href="/" className="text-lg font-bold text-blue-600">
+        <Link href="/" className="text-lg font-bold text-green-600">
           DocSlot
         </Link>
-
-        <div className="hidden md:flex items-center gap-6">
-          <a href="#about" className="hover:text-blue-600">
-            About Us
-          </a>
-          <a href="#services" className="hover:text-blue-600">
-            Services
-          </a>
-          <a href="#footer" className="hover:text-blue-600">
-            Contact
-          </a>
-        </div>
 
         <div className="hidden md:flex items-center gap-4 text-sm">
           {user ? (
             <>
               <Link
                 href="/dashboard"
-                className="flex items-center gap-1.5 text-gray-700 hover:text-blue-600"
+                className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 ${isActive("/dashboard") ? "bg-blue-50 text-green-600" : "text-gray-600 hover:text-green-600 hover:bg-green-100"}`}
               >
                 My Appointments
                 {scheduledCount > 0 && (
-                  <span className="bg-blue-600 text-white text-xs font-medium w-5 h-5 rounded-full flex items-center justify-center">
+                  <span className=" bg-green-600 text-white text-xs font-medium w-5 h-5 rounded-full flex items-center justify-center">
                     {scheduledCount > 9 ? "9+" : scheduledCount}
                   </span>
                 )}
               </Link>
               <Link
                 href="/profile"
-                className="text-gray-700 hover:text-blue-600"
+                className={`px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 ${isActive("/profile") ? " bg-blue-50 text-green-600" : "hover:bg-green-100"}`}
               >
                 My Profile
               </Link>
               {profile?.role === "admin" && (
                 <Link
                   href="/admin"
-                  className="text-gray-700 hover:text-purple-600 font-medium"
+                  className="px-4 py-2 rounded-lg text-sm text-red-700 hover:text-red-600 font-medium hover:bg-red-100"
                 >
                   Admin
                 </Link>
@@ -127,44 +118,23 @@ export default function Navbar() {
 
       {isOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 px-6 py-4 flex flex-col gap-4">
-          <a
-            href="#about"
-            className="hover:text-blue-600"
-            onClick={() => setIsOpen(false)}
-          >
-            About Us
-          </a>
-          <a
-            href="#services"
-            className="hover:text-blue-600"
-            onClick={() => setIsOpen(false)}
-          >
-            Services
-          </a>
-          <a
-            href="#contact"
-            className="hover:text-blue-600"
-            onClick={() => setIsOpen(false)}
-          >
-            Contact
-          </a>
           {user ? (
             <>
               <Link
                 href="/dashboard"
-                className="flex items-center gap-1.5 hover:text-blue-600"
+                className="flex items-center gap-1.5 hover:text-green-600"
                 onClick={() => setIsOpen(false)}
               >
                 My Appointments
                 {scheduledCount > 0 && (
-                  <span className="bg-blue-600 text-white text-xs font-medium w-5 h-5 rounded-full flex items-center justify-center">
+                  <span className="bg-green-600 text-white text-xs font-medium w-5 h-5 rounded-full flex items-center justify-center">
                     {scheduledCount > 9 ? "9+" : scheduledCount}
                   </span>
                 )}
               </Link>
               <Link
                 href="/profile"
-                className="hover:text-blue-600"
+                className="hover:text-green-600"
                 onClick={() => setIsOpen(false)}
               >
                 My Profile
@@ -183,7 +153,7 @@ export default function Navbar() {
                   setIsOpen(false);
                   handleLogout();
                 }}
-                className="text-left px-4 py-1.5 text-sm rounded-md border border-red-300 text-red-600 bg-white hover:bg-red-600 hover:text-white hover:border-red-600 transition-all w-full"
+                className="text-center px-4 py-1.5 text-sm rounded-md border border-red-300 text-red-600 bg-white hover:bg-red-600 hover:text-white hover:border-red-600 transition-all w-full"
               >
                 Log out
               </button>
