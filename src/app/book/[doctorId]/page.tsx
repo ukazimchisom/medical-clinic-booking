@@ -1,17 +1,21 @@
 "use client";
 
+import { toast } from "sonner";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getBookedSlots } from "@/services/appointment-service";
+import { getDoctor } from "@/services/doctor-service";
+import BookingPageSkeleton from "@/components/ui/BookingPageSkeleton";
 
 import Calendar from "@/components/ui/Calendar";
 import { format } from "date-fns";
 
 import { useEffect } from "react";
-import { supabase } from "@/lib/supabase-client";
 
 import Navbar from "@/components/layout/Navbar";
 import Button from "@/components/ui/Button";
@@ -24,38 +28,25 @@ import {
 } from "@/lib/validators/appointment";
 import Image from "next/image";
 
-import { getBookedSlots } from "@/services/appointment-service";
-
-interface Doctor {
-  id: string;
-  name: string;
-  specialty: string;
-  photo?: string;
-}
-
 export default function BookAppointmentPage() {
   const params = useParams();
   const doctorId = params.doctorId as string;
 
   const router = useRouter();
 
-  const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
 
-  useEffect(() => {
-    async function fetchSlots() {
-      if (!selectedDate) return;
-      const formattedDate = format(selectedDate, "yyyy-MM-dd");
-      try {
-        const slots = await getBookedSlots(doctorId, formattedDate);
-        setBookedSlots(slots);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchSlots();
-  }, [selectedDate, doctorId]);
+  const queryClient = useQueryClient();
+
+  const formattedDate = selectedDate
+    ? format(selectedDate, "yyyy-MM-dd")
+    : null;
+
+  const { data: bookedSlots = [] } = useQuery({
+    queryKey: ["bookedSlots", doctorId, formattedDate],
+    queryFn: () => getBookedSlots(doctorId, formattedDate!),
+    enabled: !!selectedDate && !!doctorId,
+  });
 
   const {
     handleSubmit,
@@ -65,10 +56,17 @@ export default function BookAppointmentPage() {
     resolver: zodResolver(appointmentSchema),
   });
 
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.replace(`/login?redirect=/book/${doctorId}`);
+    }
+  }, [user, authLoading, router, doctorId]);
 
   useEffect(() => {
     if (selectedDate) {
@@ -78,27 +76,15 @@ export default function BookAppointmentPage() {
     }
   }, [selectedDate, setValue]);
 
-  useEffect(() => {
-    async function fetchDoctor() {
-      const { data, error } = await supabase
-        .from("doctors")
-        .select("*")
-        .eq("id", doctorId)
-        .single();
-
-      if (error) {
-        console.error(error);
-      } else {
-        setDoctor(data);
-      }
-    }
-
-    if (doctorId) fetchDoctor();
-  }, [doctorId]);
+  const { data: doctor, isLoading: doctorLoading } = useQuery({
+    queryKey: ["doctor", doctorId],
+    queryFn: () => getDoctor(doctorId),
+    enabled: !!doctorId && !!user && !authLoading,
+  });
 
   async function onSubmit(data: AppointmentFormData) {
     if (!user) {
-      alert("You must be logged in");
+      toast.error("You must be logged in to book an appointment");
       return;
     }
 
@@ -117,8 +103,10 @@ export default function BookAppointmentPage() {
         appointment_date: data.appointment_date,
         appointment_time: data.appointment_time,
       });
-
-      router.push("/dashboard");
+      queryClient.invalidateQueries({ queryKey: ["appointments", user?.id] });
+      router.push(
+        `/booking-confirmation?doctor=${encodeURIComponent(doctor.name)}&date=${data.appointment_date}&time=${data.appointment_time}`,
+      );
     } catch (error: unknown) {
       setServerError(
         error instanceof Error ? error.message : "An error occurred",
@@ -128,11 +116,12 @@ export default function BookAppointmentPage() {
     setLoading(false);
   }
 
-  if (!doctor) {
+  if (authLoading || doctorLoading || !doctor) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <main className="min-h-screen bg-gray-50 mt-12">
+        <Navbar />
+        <BookingPageSkeleton />
+      </main>
     );
   }
 
@@ -150,6 +139,27 @@ export default function BookAppointmentPage() {
       <Navbar />
 
       <div className="max-w-xl md:max-w-5xl mx-auto px-6 py-12">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-6"
+        >
+          <svg
+            className="w-4 h-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back to Doctors
+        </button>
+
         <h1 className="text-2xl font-bold mb-6">Book an Appointment</h1>
         <p className="text-gray-600 mb-6">
           Please select a date and time for your appointment.

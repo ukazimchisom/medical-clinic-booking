@@ -2,9 +2,12 @@
 
 import Navbar from "@/components/layout/Navbar";
 import DoctorCard from "@/components/ui/DoctorCard";
-import { supabase } from "@/lib/supabase-client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import SearchFilter from "@/components/ui/SearchFilter";
+import DoctorCardSkeleton from "@/components/ui/DoctorCardSkeleton";
+import { useQuery } from "@tanstack/react-query";
+import { getDoctors } from "@/services/appointment-service";
 
 interface Doctor {
   id: string;
@@ -18,35 +21,31 @@ interface Doctor {
 }
 
 export default function DoctorsPage() {
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedSpecialty, setSelectedSpecialty] = useState("All Specialties");
+  const [search, setSearch] = useState("");
+
+  const { data: doctors = [], isLoading: loading } = useQuery({
+    queryKey: ["doctors"],
+    queryFn: getDoctors,
+    staleTime: 1000 * 60 * 10, // cache doctors for 10 minutes
+  });
 
   const specialties = [
     "All Specialties",
     ...new Set(doctors.map((d) => d.specialty)),
   ];
-  const [selectedSpecialty, setSelectedSpecialty] = useState("All Specialties");
 
-  useEffect(() => {
-    async function loadDoctors() {
-      const { data, error } = await supabase.from("doctors").select("*");
+  const filteredDoctors = doctors.filter((doctor) => {
+    const matchesSpecialty =
+      selectedSpecialty === "All Specialties" ||
+      doctor.specialty === selectedSpecialty;
 
-      if (error) {
-        console.error(error);
-      } else {
-        setDoctors(data || []);
-      }
+    const matchesSearch = doctor.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
 
-      setLoading(false);
-    }
-
-    loadDoctors();
-  }, []);
-
-  const filteredDoctors =
-    selectedSpecialty === "All Specialties"
-      ? doctors
-      : doctors.filter((doctor) => doctor.specialty === selectedSpecialty);
+    return matchesSpecialty && matchesSearch;
+  });
 
   return (
     <>
@@ -69,6 +68,7 @@ export default function DoctorsPage() {
               alt="Doctors Hero"
               width={800}
               height={500}
+              priority
               className="w-full h-[300px] md:h-[450px] object-cover rounded-lg shadow-lg"
             />
           </div>
@@ -76,30 +76,59 @@ export default function DoctorsPage() {
       </section>
       <section className="mt-10 h-auto max-w-7xl mx-auto px-6 sm:px-12 py-10">
         {loading && (
-          <div className="flex justify-center items-center py-10">
-            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <DoctorCardSkeleton />
+            <DoctorCardSkeleton />
+            <DoctorCardSkeleton />
+            <DoctorCardSkeleton />
+            <DoctorCardSkeleton />
+            <DoctorCardSkeleton />
           </div>
         )}
 
         {!loading && doctors.length > 0 && (
-          <select
-            value={selectedSpecialty}
-            onChange={(e) => setSelectedSpecialty(e.target.value)}
-            className="mb-6 p-2 rounded border"
-          >
-            {specialties.map((spec) => (
-              <option key={spec} value={spec}>
-                {spec}
-              </option>
-            ))}
-          </select>
+          <SearchFilter
+            search={search}
+            onSearchChange={setSearch}
+            selectedSpecialty={selectedSpecialty}
+            onSpecialtyChange={setSelectedSpecialty}
+            specialties={specialties}
+          />
         )}
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDoctors.map((doctor) => (
-            <DoctorCard key={doctor.id} doctor={doctor} />
-          ))}
-        </div>
+        {filteredDoctors.length === 0 && !loading ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <svg
+                className="w-8 h-8 text-gray-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                />
+              </svg>
+            </div>
+            <p className="text-gray-700 font-medium text-lg">
+              No doctors found
+            </p>
+            <p className="text-gray-400 text-sm mt-1">
+              Try adjusting your search or filter to find what you are looking
+              for
+            </p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDoctors.map((doctor) => (
+              <DoctorCard key={doctor.id} doctor={doctor} />
+            ))}
+          </div>
+        )}
       </section>
     </>
   );

@@ -12,6 +12,7 @@ export default function ChooseUs() {
               alt="Why Choose Us"
               width={30}
               height={30}
+              priority
             />
             <p>Why Choose Us</p>
           </span>
