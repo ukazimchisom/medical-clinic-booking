@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-// @ts-expect-error: Allow side-effect CSS import in Next.js app directory
-import "./globals.css";
 import { Toaster } from "sonner";
 
 import { Roboto } from "next/font/google";
