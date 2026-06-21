@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
+import "./globals.css";
 import { Toaster } from "sonner";
-
 import { Roboto } from "next/font/google";
-
 import QueryProvider from "@/components/provider/QueryProvider";
 
 const roboto = Roboto({
@@ -24,8 +23,8 @@ export default function RootLayout({
   return (
     <QueryProvider>
       <Toaster position="top-right" richColors />
-      <html lang="en" className={`${roboto.className}`}>
-        <body className="font-sans">{children}</body>
+      <html lang="en">
+        <body className={roboto.className}>{children}</body>
       </html>
     </QueryProvider>
   );

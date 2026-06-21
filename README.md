@@ -100,7 +100,7 @@ Built with Next.js App Router, Supabase for authentication and database, TanStac
 
 ## 📸 Screenshots
 
-![](/Docslot-screenshot.png)
+![](/public/Docslot-screenshot.png)
 
 ---
 
