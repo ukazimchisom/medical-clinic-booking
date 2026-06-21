@@ -2,7 +2,7 @@
 
 # 🏥 DocSlot
 
-**A full-stack medical clinic booking platform — built on Next.js, Supabase, and EmailJS.**
+**A full-stack Healthcare appointment booking platform — built on Next.js, Supabase, and EmailJS.**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://docslot.vercel.app/)
 [![GitHub](https://img.shields.io/badge/Source%20Code-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ukazimchisom/medical-clinic-booking)
@@ -41,7 +41,7 @@
 
 ## 🌟 Overview
 
-DocSlot is a full-stack medical clinic booking web application that allows patients to browse qualified doctors, book appointments, manage their schedules, and receive email confirmations — all in one place. It features a patient-facing interface and a full-featured admin panel for managing doctors, appointments, and users.
+DocSlot is a full-stack Healthcare appointment booking platform that allows patients to browse qualified doctors, book appointments, manage their schedules, and receive email confirmations — all in one place. It features a patient-facing interface and a full-featured admin panel for managing doctors, appointments, and users.
 
 Built with Next.js App Router, Supabase for authentication and database, TanStack Query for intelligent data caching, and EmailJS for transactional emails.
 
